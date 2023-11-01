@@ -3,6 +3,8 @@ from tkinter.scrolledtext import ScrolledText
 from tkcalendar import Calendar
 from tkinter import ttk  # ttkをインポート
 from datetime import date
+import db
+
 
 class Application(tk.Frame):
     def __init__(self, master):
@@ -30,10 +32,6 @@ class Application(tk.Frame):
         selected_date_label.grid(row=0, column=0, padx=(350, 0), pady=10, sticky='w')  # グリッド配置
         
 
-        save_button = tk.Button(self, text="保存")  # 保存ボタンを作成
-        
-        
-        save_button.grid(row=0, column=0, padx=(0, 100), pady=10, sticky='e')  # グリッド配置
         
         weather_options = ["晴れ", "曇り", "雨", "雪"]  # 天気の選択肢リスト
 
@@ -46,25 +44,34 @@ class Application(tk.Frame):
 
         weather_label = tk.Label(self, text="今日の天気:")  # ラベルを作成
         weather_label.grid(row=1, column=0, padx=(0, 0), pady=10)  # グリッド配置
+        
+        weather = weather_combobox.get()
 
 
         text = ScrolledText(self, font=("", 15), height=10, width=40)  # スクロール可能なテキストボックスを作成
         text.grid(row=4, column=0, padx=(250, 0), pady=10, sticky='w')  # グリッド配置
 
-        cal = Calendar(self, selectmode="day", showweeknumbers=False)  # カレンダーウィジェットを作成
+
+        #カレンダーウィジェットを作成
+        cal = Calendar(self, selectmode="day", showweeknumbers=False)  
         cal.grid(row=4, column=0, padx=20, pady=10, sticky='w')  # グリッド配置
         cal.bind("<<CalendarSelected>>", lambda event: update_selected_date())  # カレンダーの選択イベントに関数をバインド
 
         weather_label = tk.Label(self, text="今日の充実度:")  # ラベルを作成
         weather_label.grid(row=2, column=0, padx=(0, 0), pady=0)  # グリッド配置
 
-        self.create_slider()  # スライダーを作成
 
-    def create_slider(self):
         self.scale_var = tk.DoubleVar()
         scaleH = tk.Scale(self, variable=self.scale_var, orient=tk.HORIZONTAL, length=180, from_=0, to=100)
         scaleH.grid(row=2, column=0, padx=(300, 0), pady=0)
+        erichment=self.scale_var.get()
 
+        
+        save_button = tk.Button(self, text="保存",command=db.click_insert(today,text,weather,erichment,action))  # 保存ボタンを作成
+        save_button.grid(row=0, column=0, padx=(0, 100), pady=10, sticky='e')  # グリッド配置
+        
+        
+            
 if __name__ == '__main__':
     root = tk.Tk()  # ルートウィンドウを作成
     app = Application(master=root)  # Applicationクラスのインスタンスを作成
