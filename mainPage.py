@@ -28,6 +28,7 @@ class Application(tk.Frame):
         root.config(menu=menubar)
         setting_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label='操作', menu=setting_menu)
+        setting_menu.add_command(label='保存')
         setting_menu.add_command(label='削除')
         setting_menu.add_command(label='検索')
         
@@ -35,10 +36,8 @@ class Application(tk.Frame):
         selected_date_label = tk.Label(self, text=f"{today}の日記", font=("", 12))  # ラベルを作成
         selected_date_label.grid(row=0, column=0, padx=(350, 0), pady=10, sticky='w')  # グリッド配置
         
-
         
         weather_options = ["晴れ", "曇り", "雨", "雪"]  # 天気の選択肢リスト
-
         selected_weather = tk.StringVar()  # 天気を選択するための変数を作成
 
         # ttk.Comboboxを使用してプルダウンメニューを作成
@@ -51,11 +50,11 @@ class Application(tk.Frame):
         
 
 
+
         text = tk.Text(self, font=("", 15), height=10, width=40)
         text.grid(row=4, column=0, padx=(250, 0), pady=10, sticky='w')
         
         
-
 
         #カレンダーウィジェットを作成
         cal = Calendar(self, selectmode="day", showweeknumbers=False)  
@@ -69,6 +68,24 @@ class Application(tk.Frame):
         self.scale_var = tk.DoubleVar()
         scaleH = tk.Scale(self, variable=self.scale_var, orient=tk.HORIZONTAL, length=180, from_=0, to=100)
         scaleH.grid(row=2, column=0, padx=(300, 0), pady=0)
+        
+        # チェック有無変数
+        self.var = tk.IntVar()
+
+        rdo1 = ttk.Radiobutton(self, text='出社', variable=self.var, value=0)
+        rdo1.grid(row=3, column=0, padx=(0, 50), pady=0)
+
+        rdo2 = ttk.Radiobutton(self, text='テレワーク', variable=self.var, value=1)
+        rdo2.grid(row=3, column=0, padx=(70, 0), pady=0)
+
+        rdo3 = ttk.Radiobutton(self, text='外回り', variable=self.var, value=2)
+        rdo3.grid(row=3, column=0, padx=(200,0), pady=0)
+
+        rdo4 = ttk.Radiobutton(self, text='出張', variable=self.var, value=3)
+        rdo4.grid(row=3, column=0, padx=(300, 0), pady=0)
+
+        rdo5 = ttk.Radiobutton(self, text='休日', variable=self.var, value=4)
+        rdo5.grid(row=3, column=0, padx=(400, 0), pady=0)
 
         
         
