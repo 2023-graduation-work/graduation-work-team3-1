@@ -3,7 +3,7 @@ from tkinter.scrolledtext import ScrolledText
 from tkcalendar import Calendar
 from tkinter import ttk  # ttkをインポート
 from datetime import date
-import db
+
 import sqlite3
 import tkinter as tk
 from tkinter import messagebox
