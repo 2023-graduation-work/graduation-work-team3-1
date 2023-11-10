@@ -1,9 +1,12 @@
 import tkinter as tk
-from tkinter import ttk
+
+
 from tkinter.scrolledtext import ScrolledText
 from tkcalendar import Calendar
-from datetime import date
+
+from tkinter import ttk
 from tkinter import messagebox
+from datetime import date
 import sqlite3
 
 class Application(tk.Frame):
@@ -11,18 +14,25 @@ class Application(tk.Frame):
         super().__init__(master)
         self.master = master
         self.pack()
+
         master.geometry("700x400")
         master.title("日記アプリ")
         master.resizable(False,False)
+
+        master.geometry("600x300")
+        master.title("日記アプリ")
+        master.resizable(False, False)
+
         self.create_widgets()
 
     def create_widgets(self):
         def update_selected_date():
-            selected_date = cal.get_date()
+            selected_date = self.cal.get_date()
             selected_date_label.config(text=f"{selected_date}の日記")
             
 
         
+
 
         def save_entry():
             today = cal.get_date()
@@ -73,47 +83,68 @@ class Application(tk.Frame):
         selected_date_label = tk.Label(self, text=f"{today}の日記", font=("", 12))
         selected_date_label.grid(row=0, column=0, padx=(350, 0), pady=10, sticky='w')
 
+        self.today = date.today()
+        selected_date_label = tk.Label(self, text=f"{self.today}の日記", font=("", 12))
+        selected_date_label.grid(row=0, column=0, padx=(350, 0), pady=5, sticky='w')
+
+
         weather_options = ["晴れ", "曇り", "雨", "雪"]
-        selected_weather = tk.StringVar()
-        weather_combobox = ttk.Combobox(self, textvariable=selected_weather, values=weather_options, width=25)
-        weather_combobox.grid(row=1, column=0, padx=(300, 0), pady=10)
+        self.selected_weather = tk.StringVar()
+        weather_combobox = ttk.Combobox(self, textvariable=self.selected_weather, values=weather_options, width=25)
+        weather_combobox.grid(row=1, column=0, padx=(300, 0), pady=5)
         weather_combobox.set(weather_options[0])
 
         weather_label = tk.Label(self, text="今日の天気:")
-        weather_label.grid(row=1, column=0, padx=(0, 0), pady=10)
+        weather_label.grid(row=1, column=0, padx=(0, 0), pady=5)
 
-        text = ScrolledText(self, font=("", 15), height=10, width=40)
-        text.grid(row=4, column=0, padx=(250, 0), pady=10, sticky='w')
+        self.text = ScrolledText(self, font=("", 15), height=7, width=30)
+        self.text.grid(row=4, column=0, padx=(250, 0), pady=10, sticky='w')
 
-        cal = Calendar(self, selectmode="day", showweeknumbers=False)
-        cal.grid(row=4, column=0, padx=20, pady=10, sticky='w')
-        cal.bind("<<CalendarSelected>>", lambda event: update_selected_date())
+        self.cal = Calendar(self, selectmode="day", showweeknumbers=False)
+        self.cal.grid(row=4, column=0, padx=10, pady=10, sticky='w')
+        self.cal.bind("<<CalendarSelected>>", lambda event: update_selected_date())
 
         weather_label = tk.Label(self, text="今日の充実度:")
         weather_label.grid(row=2, column=0, padx=(0, 0), pady=0)
 
-        scale_var = tk.DoubleVar()
-        scaleH = tk.Scale(self, variable=scale_var, orient=tk.HORIZONTAL, length=180, from_=0, to=100)
+        self.scale_var = tk.DoubleVar()
+        scaleH = tk.Scale(self, variable=self.scale_var, orient=tk.HORIZONTAL, length=180, from_=1, to=100)
         scaleH.grid(row=2, column=0, padx=(300, 0), pady=0)
 
-        actions = ["出社", "テレワーク", "外回り", "出張", "休日"]
+        self.actions = ["出社", "テレワーク", "外回り", "出張", "休日"]
         self.var = tk.IntVar()
         action_frame = ttk.Frame(self)
-        action_frame.grid(row=3, column=0, padx=(0, 0), pady=0)
-        for i, action in enumerate(actions):
+        action_frame.grid(row=3, column=0, padx=(250, 0), pady=0)
+        for i, action in enumerate(self.actions):
             rdo = ttk.Radiobutton(action_frame, text=action, variable=self.var, value=i)
             rdo.grid(row=0, column=i, padx=5, pady=0)
+
 
         save_button = tk.Button(self, text="保存", command=save_entry)
         save_button.grid(row=0, column=0, padx=(0, 100), pady=10, sticky='e')
 
-        
+
+        save_button = tk.Button(self, text="保存", command=self.save_entry)
+        save_button.grid(row=0, column=0, padx=(0, 40), pady=5, sticky='e')
+
+    def save_entry(self):
+        today = self.cal.get_date()
+        weather = self.selected_weather.get()
+        enrichment = self.scale_var.get()
+        action = self.actions[self.var.get()]
+        diary_text = self.text.get("1.0", tk.END)
+        self.insert_data(today, diary_text, weather, enrichment, action)
+
 
     def insert_data(self, today, textbox, weather, enrichment, action):
-        conn = sqlite3.connect('daiaryapp.sqlite3')
+        conn = sqlite3.connect('diaryapp.sqlite3')
         cur = conn.cursor()
         try:
+
             create_table_sql = "CREATE TABLE IF NOT EXISTS diary (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, textbox TEXT, weather TEXT, enrichment INTEGER, action TEXT);"
+
+            create_table_sql = "CREATE TABLE IF NOT EXISTS diary (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, textbox TEXT, weather TEXT, enrichment INTEGER, action TEXT)"
+
             cur.execute(create_table_sql)
             conn.commit()
 
@@ -123,6 +154,7 @@ class Application(tk.Frame):
             messagebox.showinfo("Success", "データが正常に挿入されました。")
         except sqlite3.Error as e:
             messagebox.showerror("Error", "SQLite3への接続中にエラーが発生しました:\n" + str(e))
+
 
     def delete_data(self, today):
         conn = sqlite3.connect('daiaryapp.sqlite3')
@@ -159,3 +191,7 @@ if __name__ == '__main__':
     root = tk.Tk()  # ルートウィンドウを作成
     app = Application(master=root)  # Applicationクラスのインスタンスを作成
     root.mainloop()  # アプリケーションを実行
+
+
+
+
