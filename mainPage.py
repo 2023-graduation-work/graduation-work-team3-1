@@ -1,6 +1,9 @@
 import tkinter as tk
+
+
 from tkinter.scrolledtext import ScrolledText
 from tkcalendar import Calendar
+
 from tkinter import ttk
 from tkinter import messagebox
 from datetime import date
@@ -14,9 +17,15 @@ class Application(tk.Frame):
         super().__init__(master)
         self.master = master
         self.pack()
+
+        master.geometry("700x400")
+        master.title("日記アプリ")
+        master.resizable(False,False)
+
         master.geometry("600x300")
         master.title("日記アプリ")
         master.resizable(False, False)
+
         self.create_widgets()
         self.create_datebase()
 
@@ -39,11 +48,16 @@ class Application(tk.Frame):
             selected_date = datetime.strptime(selected_date_str, "%d-%m-%Y")
             d = selected_date.strftime('%Y/%m/%d')
             selected_date_label.config(text=f"{d}の日記")
+
         self.today = date.today()
         selected_date_label = tk.Label(self, text=f"{self.today}の日記", font=("", 12))
         selected_date_label.grid(row=0, column=0, padx=(350, 0), pady=5, sticky='w')
 
+
         #天気のコンボボックス
+
+
+
         weather_options = ["晴れ", "曇り", "雨", "雪"]
         self.selected_weather = tk.StringVar()
         weather_combobox = ttk.Combobox(self, textvariable=self.selected_weather, values=weather_options, width=25)
@@ -89,6 +103,7 @@ class Application(tk.Frame):
 
             
         #保存ボタン
+
         save_button = tk.Button(self, text="保存", command=self.save_entry)
         save_button.grid(row=0, column=0, padx=(0, 40), pady=5, sticky='e')
         
@@ -205,6 +220,7 @@ class Application(tk.Frame):
         except sqlite3.Error as e:
             messagebox.showerror("Error", "SQLite3への接続中にエラーが発生しました:\n" + str(e))
 
+
         #INSERT処理
     def insert_up_data(self, today, textbox, weather, enrichment, action):
         conn = sqlite3.connect('diaryapp.sqlite3')
@@ -259,8 +275,43 @@ class Application(tk.Frame):
             messagebox.showerror("Error", "SQLite3への接続中にエラーが発生しました:\n" + str(e))
         
 
+
+    def delete_data(self, today):
+        conn = sqlite3.connect('daiaryapp.sqlite3')
+        cur = conn.cursor()
+        try:
+            sql_statement = "DELETE FROM diary WHERE date = ?;"
+            cur.execute(sql_statement, (today,))
+            conn.commit()
+            messagebox.showinfo("Success", "データが正常に削除されました。")
+        except sqlite3.Error as e:
+            messagebox.showerror("Error", "SQLite3への接続中にエラーが発生しました:\n" + str(e))
+    
+    def search_data(self, keyword):
+        conn = sqlite3.connect('daiaryapp.sqlite3')
+        cur = conn.cursor()
+        search_results = []
+        try:
+            sql_statement = "SELECT date, textbox FROM diary WHERE textbox LIKE ?;"
+            cur.execute(sql_statement, (f"%{keyword}%",))
+            rows = cur.fetchall()
+            for row in rows:
+                search_results.append(f"{row[0]}:\n{row[1]}")
+            conn.commit()
+        except sqlite3.Error as e:
+            messagebox.showerror("Error", "SQLite3への接続中にエラーが発生しました:\n" + str(e))
+        return search_results
+    
+    
+    
+    
+
+    
 if __name__ == '__main__':
-    root = tk.Tk()
-    app = Application(master=root)
-    root.mainloop()
+    root = tk.Tk()  # ルートウィンドウを作成
+    app = Application(master=root)  # Applicationクラスのインスタンスを作成
+    root.mainloop()  # アプリケーションを実行
+
+
+
 
