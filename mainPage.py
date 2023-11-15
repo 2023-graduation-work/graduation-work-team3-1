@@ -277,7 +277,7 @@ class Application(tk.Frame):
 
 
     def delete_data(self, today):
-        conn = sqlite3.connect('daiaryapp.sqlite3')
+        conn = sqlite3.connect('diaryapp.sqlite3')
         cur = conn.cursor()
         try:
             sql_statement = "DELETE FROM diary WHERE date = ?;"
@@ -288,7 +288,7 @@ class Application(tk.Frame):
             messagebox.showerror("Error", "SQLite3への接続中にエラーが発生しました:\n" + str(e))
     
     def search_data(self, keyword):
-        conn = sqlite3.connect('daiaryapp.sqlite3')
+        conn = sqlite3.connect('diaryapp.sqlite3')
         cur = conn.cursor()
         search_results = []
         try:
