@@ -49,34 +49,71 @@ class Application(tk.Frame):
             d = selected_date.strftime('%Y/%m/%d')
             selected_date_label.config(text=f"{d}の日記")
             
+
             # 初期値を設定
             self.selected_weather.set(weather_options[0])
 
-            # スライダーの初期値を更新
-            entry = self.get_entry_by_date(d)
-            if entry:
-                self.scale_var.set(entry['enrichment'])
-                self.var.set(self.actions.index(entry['action']))
 
+            else:
+                weather_options = ["晴れ", "曇り", "雨", "雪"]
+                self.selected_weather.set(weather_options[0])
             # テキストボックスの初期値を更新
                 self.text.delete("1.0", tk.END)
-                self.text.insert("1.0", entry['textbox'])
-                
-            else:
+                self.text.insert(tk.END, "")
                 # エントリが存在しない場合、初期値を設定
                 self.scale_var.set(1)
                 self.var.set(0)
-        
-        
+
+            
+
+            # データが存在する時、textboxにデータを表示処理
+            day=self.cal.get_date()
+            for dayy in self.serect_data():
+                d = ",".join(dayy)
+                if day == d:
+                    self.text.config(state=tk.NORMAL)
+                    self.text.delete(1.0, tk.END)
+                    textdate=self.search_textbox(day)
+                    text = ",".join(textdate)
+                    self.text.insert(tk.END, text)
+            # データが存在する時、天気の初期値をデータに置き換える処理
+                    tenki=self.search_weather(day)
+                    wea = ",".join(tenki)
+                    if wea == "晴れ":
+                        tenki = 0
+                    elif wea == "曇り":
+                        tenki = 1   
+                    elif wea == "雨":
+                        tenki = 2
+                    elif wea == "雪":
+                        tenki = 3
+                    
+                    weather_options = ["晴れ", "曇り", "雨", "雪"]
+                    self.selected_weather.set(weather_options[tenki])
+                # データが存在する時、充実度の初期値をデータに置き換える処理
+                    zyuzitu=self.search_enrichment(day)
+                    self.scale_var.set(zyuzitu[0])
+                #データが存在する時、行動の初期値をデータに置き換える処理
+                    action=self.search_action(day)
+                    action = ",".join(action)
+                    if action == "出社":
+                        action = 0
+                    elif action == "テレワーク":
+                        action = 1
+                    elif action == "外回り":
+                        action = 2
+                    elif action == "出張":
+                        action = 3
+                    elif action == "休日":
+                        action = 4
+                    
+                    self.var.set(action)
+
+                    
+
+                    
+                    
                         
-                # テキストボックスを空にする
-                self.text.delete("1.0", tk.END)
-
-        
-        weather_options = ["晴れ", "曇り", "雨", "雪"]
-        self.selected_weather = tk.StringVar()
-        self.selected_weather.set(weather_options[0])  # 初期値を設定
-
         self.today = date.today()
         selected_date_label = tk.Label(self, text=f"{self.today}の日記", font=("", 12))
         selected_date_label.grid(row=0, column=0, padx=(350, 0), pady=5, sticky='w')
@@ -96,7 +133,7 @@ class Application(tk.Frame):
         weather_label.grid(row=1, column=0, padx=(0, 0), pady=5)
 
         #テキストボックス
-        self.text = ScrolledText(self, font=("", 15), height=7, width=30)
+        self.text = ScrolledText(self, font=("", 15), height=7, width=30,state=tk.DISABLED)
         self.text.grid(row=4, column=0, padx=(250, 0), pady=10, sticky='w')
 
         #カレンダー生成処理
@@ -137,8 +174,13 @@ class Application(tk.Frame):
         save_button = tk.Button(self, text="保存", command=self.save_entry)
         save_button.grid(row=0, column=0, padx=(0, 40), pady=5, sticky='e')
         
+    
+
+                
+            
         
         
+        #サブウィンドウを生成
         def open_search_window():
             #  command=self.perform_search
             search_window = tk.Toplevel(root)
@@ -156,7 +198,7 @@ class Application(tk.Frame):
             
             
                 
-            
+            #テキストボックスの検索処理
             def perform_search():
                     keyword = search_entry.get()
                     search_results = self.search_data(keyword)
@@ -169,11 +211,11 @@ class Application(tk.Frame):
             
             search_button = tk.Button(search_window, text="検索",command= lambda : perform_search())
             search_button.pack()
-
+    #削除処理
     def delete_entry(self):
         today = self.cal.get_date()
         self.delete_entry_by_date(today)
-        
+    #削除処理のSQL
     def delete_entry_by_date(self, today):
         conn = sqlite3.connect('diaryapp.sqlite3')
         cur = conn.cursor()
@@ -209,8 +251,64 @@ class Application(tk.Frame):
         except sqlite3.Error as e:
             messagebox.showerror("Error", "SQLite3への接続中にエラーが発生しました:\n" + str(e))
             
+            
+            #データの日付から行動のデータを取ってくる処理
+    def search_action(self, keyword):
+        conn = sqlite3.connect('diaryapp.sqlite3')
+        cur = conn.cursor()
+        search_results = []
+        try:
+            sql_statement = "SELECT action FROM diary WHERE date = ?;"
+            cur.execute(sql_statement, (keyword,))
+            search_results = cur.fetchone()
+            conn.commit()
+            return  search_results
+        except sqlite3.Error as e:
+            messagebox.showerror("Error", "SQLite3への接続中にエラーが発生しました:\n" + str(e))    
+            
     
+        #データの日付から充実度のデータを取ってくる処理
+    def search_enrichment(self, keyword):
+        conn = sqlite3.connect('diaryapp.sqlite3')
+        cur = conn.cursor()
+        search_results = []
+        try:
+            sql_statement = "SELECT enrichment FROM diary WHERE date = ?;"
+            cur.execute(sql_statement, (keyword,))
+            search_results = cur.fetchone()
+            conn.commit()
+            return  search_results
+        except sqlite3.Error as e:
+            messagebox.showerror("Error", "SQLite3への接続中にエラーが発生しました:\n" + str(e))        
+    #データの日付から天気のデータを取ってくる処理
+    def search_weather(self, keyword):
+        conn = sqlite3.connect('diaryapp.sqlite3')
+        cur = conn.cursor()
+        search_results = []
+        try:
+            sql_statement = "SELECT weather FROM diary WHERE date = ?;"
+            cur.execute(sql_statement, (keyword,))
+            search_results = cur.fetchone()
+            conn.commit()
+            return  search_results
+        except sqlite3.Error as e:
+            messagebox.showerror("Error", "SQLite3への接続中にエラーが発生しました:\n" + str(e))        
+
+    #データの日付からテキストボックスを取ってくる処理
+    def search_textbox(self, keyword):
+        conn = sqlite3.connect('diaryapp.sqlite3')
+        cur = conn.cursor()
+        search_results = []
+        try:
+            sql_statement = "SELECT textbox FROM diary WHERE date = ?;"
+            cur.execute(sql_statement, (keyword,))
+            search_results = cur.fetchone()
+            conn.commit()
+            return  search_results
+        except sqlite3.Error as e:
+            messagebox.showerror("Error", "SQLite3への接続中にエラーが発生しました:\n" + str(e))
     
+    #エントリーから入力されたキーワードからデータの日付を取ってくる検索処理
     def search_data(self, keyword):
         conn = sqlite3.connect('diaryapp.sqlite3')
         cur = conn.cursor()
@@ -279,6 +377,7 @@ class Application(tk.Frame):
             messagebox.showinfo("Success", "データが正常に挿入されました.")
         except sqlite3.Error as e:
             messagebox.showerror("Error", "SQLite3への接続中にエラーが発生しました:\n" + str(e))
+            
     #すべてのデータを取ってくる
     def serect_data(self):
         rows = []
@@ -294,6 +393,8 @@ class Application(tk.Frame):
         except sqlite3.Error as e:
             messagebox.showerror("Error", "SQLite3への接続中にエラーが発生しました:\n" + str(e))
     #データの件数を取ってくる
+    
+    
     # 取得件数
     def line_data(self):
          rows = []
@@ -310,7 +411,6 @@ class Application(tk.Frame):
             messagebox.showerror("Error", "SQLite3への接続中にエラーが発生しました:\n" + str(e))
         
 
-
     def delete_data(self, today):
         conn = sqlite3.connect('diaryapp.sqlite3')
         cur = conn.cursor()
@@ -321,6 +421,7 @@ class Application(tk.Frame):
             messagebox.showinfo("Success", "データが正常に削除されました。")
         except sqlite3.Error as e:
             messagebox.showerror("Error", "SQLite3への接続中にエラーが発生しました:\n" + str(e))
+    
     
     def search_data(self, keyword):
         conn = sqlite3.connect('diaryapp.sqlite3')
