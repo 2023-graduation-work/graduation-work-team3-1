@@ -51,15 +51,17 @@ class Application(tk.Frame):
             
 
             # 初期値を設定
-            self.selected_weather.set(weather_options[0])
-
-
+            entry = self.get_entry_by_date(d)
+            if entry:
+                self.scale_var.set(entry['enrichment'])
+                self.var.set(self.actions.index(entry['action']))
             else:
                 weather_options = ["晴れ", "曇り", "雨", "雪"]
                 self.selected_weather.set(weather_options[0])
             # テキストボックスの初期値を更新
                 self.text.delete("1.0", tk.END)
                 self.text.insert(tk.END, "")
+                print("初期値を更新")
                 # エントリが存在しない場合、初期値を設定
                 self.scale_var.set(1)
                 self.var.set(0)
@@ -133,7 +135,7 @@ class Application(tk.Frame):
         weather_label.grid(row=1, column=0, padx=(0, 0), pady=5)
 
         #テキストボックス
-        self.text = ScrolledText(self, font=("", 15), height=7, width=30,state=tk.DISABLED)
+        self.text = ScrolledText(self, font=("", 15), height=7, width=30,state=tk.NORMAL)
         self.text.grid(row=4, column=0, padx=(250, 0), pady=10, sticky='w')
 
         #カレンダー生成処理
@@ -331,6 +333,7 @@ class Application(tk.Frame):
         dt = datetime.strptime(today, "%d-%m-%Y")
         
         # Convert the date to the desired format "yyyy/mm/dd"
+
         formatted_date = dt.strftime('%Y/%m/%d')
         
         weather = self.selected_weather.get()
@@ -338,7 +341,7 @@ class Application(tk.Frame):
         action = self.actions[self.var.get()]
         diary_text = self.text.get("1.0", tk.END)
         # Save the entry with the formatted date
-        self.insert_up_data(formatted_date, diary_text, weather, enrichment, action)
+        self.insert_up_data(today, diary_text, weather, enrichment, action)
         
         self.cal.calevent_create(dt,"Hello World",tags="Message")
         self.cal.tag_config("Message",background="red",foreground="white")
