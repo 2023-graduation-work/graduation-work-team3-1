@@ -34,7 +34,7 @@ class Application(tk.Frame):
         if len(self.serect_data()) >= 1:
             for date in self.serect_data():
                 d = ",".join(date)
-                da=datetime.strptime(d, "%d-%m-%Y")
+                da = datetime.strptime(d, "%Y/%m/%d")
                 self.cal.calevent_create(da,"Hello World",tags="Message")
                 self.cal.tag_config("Message",background="red",foreground="white")
         else:
@@ -50,12 +50,9 @@ class Application(tk.Frame):
             selected_date_label.config(text=f"{d}の日記")
             
 
+            # 初期値を設定
+            self.selected_weather.set(weather_options[0])
 
-            # スライダーの初期値を更新
-            entry = self.get_entry_by_date(d)
-            if entry:
-                self.scale_var.set(entry['enrichment'])
-                self.var.set(self.actions.index(entry['action']))
 
             else:
                 weather_options = ["晴れ", "曇り", "雨", "雪"]
@@ -151,6 +148,8 @@ class Application(tk.Frame):
         self.scale_var = tk.DoubleVar()
         scaleH = tk.Scale(self, variable=self.scale_var, orient=tk.HORIZONTAL, length=180, from_=1, to=100)
         scaleH.grid(row=2, column=0, padx=(300, 0), pady=0)
+        
+        self.scale_var.set(0)
         
         #行動ラジオボタン
         self.actions = ["出社", "テレワーク", "外回り", "出張", "休日"]
@@ -330,11 +329,16 @@ class Application(tk.Frame):
         today = self.cal.get_date()
         print("取ってきた値today"+today)
         dt = datetime.strptime(today, "%d-%m-%Y")
+        
+        # Convert the date to the desired format "yyyy/mm/dd"
+        formatted_date = dt.strftime('%Y/%m/%d')
+        
         weather = self.selected_weather.get()
         enrichment = self.scale_var.get()
         action = self.actions[self.var.get()]
         diary_text = self.text.get("1.0", tk.END)
-        self.insert_up_data(today, diary_text, weather, enrichment, action)
+        # Save the entry with the formatted date
+        self.insert_up_data(formatted_date, diary_text, weather, enrichment, action)
         
         self.cal.calevent_create(dt,"Hello World",tags="Message")
         self.cal.tag_config("Message",background="red",foreground="white")
