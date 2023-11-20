@@ -48,6 +48,34 @@ class Application(tk.Frame):
             selected_date = datetime.strptime(selected_date_str, "%d-%m-%Y")
             d = selected_date.strftime('%Y/%m/%d')
             selected_date_label.config(text=f"{d}の日記")
+            
+            # 初期値を設定
+            self.selected_weather.set(weather_options[0])
+
+            # スライダーの初期値を更新
+            entry = self.get_entry_by_date(d)
+            if entry:
+                self.scale_var.set(entry['enrichment'])
+                self.var.set(self.actions.index(entry['action']))
+
+            # テキストボックスの初期値を更新
+                self.text.delete("1.0", tk.END)
+                self.text.insert("1.0", entry['textbox'])
+                
+            else:
+                # エントリが存在しない場合、初期値を設定
+                self.scale_var.set(1)
+                self.var.set(0)
+        
+        
+                        
+                # テキストボックスを空にする
+                self.text.delete("1.0", tk.END)
+
+        
+        weather_options = ["晴れ", "曇り", "雨", "雪"]
+        self.selected_weather = tk.StringVar()
+        self.selected_weather.set(weather_options[0])  # 初期値を設定
 
         self.today = date.today()
         selected_date_label = tk.Label(self, text=f"{self.today}の日記", font=("", 12))
@@ -83,6 +111,8 @@ class Application(tk.Frame):
         self.scale_var = tk.DoubleVar()
         scaleH = tk.Scale(self, variable=self.scale_var, orient=tk.HORIZONTAL, length=180, from_=1, to=100)
         scaleH.grid(row=2, column=0, padx=(300, 0), pady=0)
+        
+        self.scale_var.set(0)
         
         #行動ラジオボタン
         self.actions = ["出社", "テレワーク", "外回り", "出張", "休日"]
