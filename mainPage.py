@@ -22,9 +22,9 @@ class Application(tk.Frame):
         master.title("日記アプリ")
         master.resizable(False,False)
 
-        master.geometry("600x300")
-        master.title("日記アプリ")
-        master.resizable(False, False)
+        # master.geometry("600x300")
+        # master.title("日記アプリ")
+        # master.resizable(False, False)
 
         self.create_widgets()
         self.create_datebase()
@@ -34,7 +34,7 @@ class Application(tk.Frame):
         if len(self.serect_data()) >= 1:
             for date in self.serect_data():
                 d = ",".join(date)
-                da = datetime.strptime(d, "%Y/%m/%d")
+                da = datetime.strptime(d, "%d-%m-%Y")
                 self.cal.calevent_create(da,"Hello World",tags="Message")
                 self.cal.tag_config("Message",background="red",foreground="white")
         else:
@@ -203,7 +203,7 @@ class Application(tk.Frame):
             #テキストボックスの検索処理
             def perform_search():
                     keyword = search_entry.get()
-                    search_results = self.search_data(keyword)
+                    search_results = self.keywordsearch_data(keyword)
                     search_result_text.config(state=tk.NORMAL)
                     search_result_text.delete(1.0, tk.END)
                     for result in search_results:
@@ -329,7 +329,6 @@ class Application(tk.Frame):
         #保存した値を取ってくる
     def save_entry(self):
         today = self.cal.get_date()
-        print("取ってきた値today"+today)
         dt = datetime.strptime(today, "%d-%m-%Y")
         
         # Convert the date to the desired format "yyyy/mm/dd"
@@ -391,7 +390,6 @@ class Application(tk.Frame):
             sql_statement = "SELECT date FROM diary"
             cur.execute(sql_statement)
             rows = cur.fetchall()
-            print(rows)
             return rows
         except sqlite3.Error as e:
             messagebox.showerror("Error", "SQLite3への接続中にエラーが発生しました:\n" + str(e))
@@ -426,7 +424,7 @@ class Application(tk.Frame):
             messagebox.showerror("Error", "SQLite3への接続中にエラーが発生しました:\n" + str(e))
     
     
-    def search_data(self, keyword):
+    def keywordsearch_data(self, keyword):
         conn = sqlite3.connect('diaryapp.sqlite3')
         cur = conn.cursor()
         search_results = []
@@ -435,15 +433,16 @@ class Application(tk.Frame):
             cur.execute(sql_statement, (f"%{keyword}%",))
             rows = cur.fetchall()
             for row in rows:
-                search_results.append(f"{row[0]}:\n{row[1]}")
+                r=datetime.strptime(row[0], "%d-%m-%Y")
+                d = r.strftime('%Y/%m/%d')
+                print(d)
+                search_results.append(f"{d}:\n{row[1]}")
             conn.commit()
         except sqlite3.Error as e:
             messagebox.showerror("Error", "SQLite3への接続中にエラーが発生しました:\n" + str(e))
         return search_results
     
-    
-    
-    
+
 
     
 if __name__ == '__main__':
