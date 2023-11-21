@@ -61,7 +61,6 @@ class Application(tk.Frame):
             # テキストボックスの初期値を更新
                 self.text.delete("1.0", tk.END)
                 self.text.insert(tk.END, "")
-                print("初期値を更新")
                 # エントリが存在しない場合、初期値を設定
                 self.scale_var.set(1)
                 self.var.set(0)
@@ -216,14 +215,12 @@ class Application(tk.Frame):
     #削除処理
     def delete_entry(self):
         today = self.cal.get_date()
-    
-    # Remove the calevent to clear the background color
-        self.cal.calevent_remove(today)
-
-    # Configure the "Message" tag with a white background
-        self.cal.tag_config("Message", background="white")
-
+        print(today)
         self.delete_entry_by_date(today)
+        today = datetime.strptime(today, "%d-%m-%Y")
+        self.cal.calevent_create(today,"He",tags="Me")
+        self.cal.tag_config("Me",background="white",foreground="black")
+
 
     def delete_entry_by_date(self, today):
         conn = sqlite3.connect('diaryapp.sqlite3')
@@ -340,7 +337,7 @@ class Application(tk.Frame):
         
         # Convert the date to the desired format "yyyy/mm/dd"
 
-        formatted_date = dt.strftime('%Y/%m/%d')
+
         
         weather = self.selected_weather.get()
         enrichment = self.scale_var.get()
@@ -350,7 +347,7 @@ class Application(tk.Frame):
         self.insert_up_data(today, diary_text, weather, enrichment, action)
         
         self.cal.calevent_create(dt,"Hello World",tags="Message")
-        self.cal.tag_config("Message",background="red",foreground="black")
+        self.cal.tag_config("Message",background="red",foreground="white")
         
     def create_datebase(self):
         conn = sqlite3.connect('diaryapp.sqlite3')
