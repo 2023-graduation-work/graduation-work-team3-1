@@ -189,7 +189,6 @@ class Application(tk.Frame):
             search_window.title("検索")
             
 
-
             search_label = tk.Label(search_window, text="キーワードを入力:")
             search_label.pack()
 
@@ -225,37 +224,6 @@ class Application(tk.Frame):
         self.cal.tag_config("Message", background="white")
 
         self.delete_entry_by_date(today)
-
-
-            search_label = tk.Label(search_window, text="キーワードを入力:")
-            search_label.pack()
-
-            search_entry = tk.Entry(search_window)
-            search_entry.pack()
-
-            search_result_text = ScrolledText(search_window, font=("", 12), height=10, width=40, state=tk.DISABLED)
-            search_result_text.pack()
-            
-            
-                
-            #テキストボックスの検索処理
-            def perform_search():
-                    keyword = search_entry.get()
-                    search_results = self.keywordsearch_data(keyword)
-                    search_result_text.config(state=tk.NORMAL)
-                    search_result_text.delete(1.0, tk.END)
-                    for result in search_results:
-                        search_result_text.insert(tk.END, result)
-                        search_result_text.insert(tk.END, "\n")
-                    search_result_text.config(state=tk.DISABLED)
-            
-            search_button = tk.Button(search_window, text="検索",command= lambda : perform_search())
-            search_button.pack()
-    #削除処理
-    def delete_entry(self):
-        today = self.cal.get_date()
-        self.delete_entry_by_date(today)
-    #削除処理のSQL
 
     def delete_entry_by_date(self, today):
         conn = sqlite3.connect('diaryapp.sqlite3')
@@ -344,7 +312,6 @@ class Application(tk.Frame):
             sql_statement = "SELECT textbox FROM diary WHERE date = ?;"
             cur.execute(sql_statement, (keyword,))
             search_results = cur.fetchone()
-
             conn.commit()
             return  search_results
         except sqlite3.Error as e:
@@ -362,25 +329,6 @@ class Application(tk.Frame):
             for row in rows:
                 search_results.append(f"{row[0]}:\n{row[1]}")
             conn.commit()
-
-            conn.commit()
-            return  search_results
-        except sqlite3.Error as e:
-            messagebox.showerror("Error", "SQLite3への接続中にエラーが発生しました:\n" + str(e))
-    
-    #エントリーから入力されたキーワードからデータの日付を取ってくる検索処理
-    def search_data(self, keyword):
-        conn = sqlite3.connect('diaryapp.sqlite3')
-        cur = conn.cursor()
-        search_results = []
-        try:
-            sql_statement = "SELECT date, textbox FROM diary WHERE textbox LIKE ?;"
-            cur.execute(sql_statement, (f"%{keyword}%",))
-            rows = cur.fetchall()
-            for row in rows:
-                search_results.append(f"{row[0]}:\n{row[1]}")
-            conn.commit()
-
         except sqlite3.Error as e:
             messagebox.showerror("Error", "SQLite3への接続中にエラーが発生しました:\n" + str(e))
         return  search_results
@@ -402,11 +350,7 @@ class Application(tk.Frame):
         self.insert_up_data(today, diary_text, weather, enrichment, action)
         
         self.cal.calevent_create(dt,"Hello World",tags="Message")
-
         self.cal.tag_config("Message",background="red",foreground="black")
-
-        self.cal.tag_config("Message",background="red",foreground="white")
-
         
     def create_datebase(self):
         conn = sqlite3.connect('diaryapp.sqlite3')
